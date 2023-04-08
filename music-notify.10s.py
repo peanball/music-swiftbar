@@ -13,8 +13,8 @@
 # <swiftbar.type>streamable</swiftbar.type>
 
 import sys
+import re
 import Foundation
-
 import PyObjCTools.AppHelper
 import objc
 import datetime
@@ -45,24 +45,28 @@ class MusicNotify(object):
             'year': userinfo.get("Year"),
         }
 
+        # print(notification)
+
         print_track(track, state)
 
 
 def print_track(track, state):
     if state == "Stopped":
         print_flush("""~~~
-♫ :stop.fill:
+♫ :stop.fill: | size=12 sfsize=11
 """)
+        return
 
     if track["duration"]:
         delta = datetime.timedelta(seconds=int(track["duration"]))
-        track["duration_formatted"] = f"({delta})"
+        stripped_delta = re.sub(r'^0:0?', "", str(delta))
+        track["duration_formatted"] = f"({stripped_delta})"
 
     if not track["album_artist"]:
         track["album_artist"] = track["artist"]
 
     if not track['artist'] or not track['title']:
-        print_empty()
+        query_itunes_subprocess()
         return
 
     if state == "Playing":
@@ -77,11 +81,11 @@ def print_track(track, state):
     track["state"] = play_mode
 
     print_flush("""~~~
-♫{state} {title} - *{artist}* | size=12 md=True
+♫{state} {title} - *{artist}* | size=12 md=True sfsize=11
 ---
-{album_artist}
-{title} {duration_formatted}
-{album} - {year}
+{album} ({year}) | sfimage=play.circle
+{title} {duration_formatted} | sfimage=music.note
+{album_artist} | sfimage=music.mic
 """.format(**track))
 
 
@@ -97,8 +101,9 @@ def print_flush(*args):
 
 def print_empty():
     print_flush("""~~~
-♫ ︎
+♫ ︎ | size=12
 """)
+
 
 def print_running_from_itunes():
     """
@@ -150,6 +155,7 @@ def print_running_from_itunes():
     }
 
     print_track(track, state)
+
 
 def query_itunes_subprocess():
     """
