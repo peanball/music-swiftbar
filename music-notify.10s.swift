@@ -2,7 +2,7 @@
 
 // metadata
 // <xbar.title>iTunes Now Playing Notifier</xbar.title>
-// <xbar.version>v0.2.0</xbar.version>
+// <xbar.version>v0.2.1</xbar.version>
 // <xbar.author>Alexander Lais</xbar.author>
 // <xbar.author.github>peanball</xbar.author.github>
 // <xbar.desc>Uses iTunes notifications for song changes to stream information to SwiftBar</xbar.desc>
@@ -169,14 +169,11 @@ class SwiftBarOutput {
     }
 
     func update() {
-        if player.isRunning {
-            printFromPlayer()
-        } else {
+        guard player.isRunning() else {
             printEmpty()
+            return
         }
-    }
 
-    func printFromPlayer() {
         let state = state(from: player.playerState!)
         if state == .Stopped {
             printEmpty()
